@@ -1,7 +1,8 @@
 # 🎵 Musify - Music Player
-### Author - Shabbir Khan
 
 A modern, responsive web-based music player built with HTML, CSS, and JavaScript. Musify allows you to browse and play music from your local music collection organized in folders.
+
+### Author - Shabbir Khan
 
 ## ✨ Features
 
