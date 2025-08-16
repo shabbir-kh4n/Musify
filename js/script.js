@@ -8,17 +8,18 @@ let currentSong = new Audio();
 
 
 async function getSongs(folder) {
-    let a = await fetch(`http://127.0.0.1:5500/songs/${folder}/`);
+    let a = await fetch(`songs/${folder}/`);
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
     let as = div.getElementsByTagName("a");
     songs = [];
     index = 0;
-    for (let index = 0; index < as.length; index++) {
+    let port = as[0].href
+    for (let index = 1; index < as.length; index++) {
         const element = as[index];
         if (element.href.includes(".mp3")) {
-            songs.push("http://127.0.0.1:5500/"+element.href.replaceAll("http://", "").replaceAll(".preview", ""))
+            songs.push(port + element.href.replaceAll("http://", "").replaceAll(".preview", ""))
         }
     }
     pusher();
@@ -56,7 +57,7 @@ function pausemus(index) {
 //play music
 function playmus(index, pause = false) {
     prepIndex = index;
-    document.querySelector(".songinfo").innerHTML = songs[index].replaceAll("%20", " ").split('/')[4].replace(".mp3", "");
+    document.querySelector(".songinfo").innerHTML = songs[index].replaceAll("%20", " ").split('/')[5].replace(".mp3", "");
     if (currentSong.src != songs[index]) {
         currentSong.src = songs[index];
     }
@@ -114,9 +115,7 @@ async function displayAlbum() {
         const e = array[index];
 
         if (e.href.includes("/songs/")) {
-            if(e.href.includes("songs/")){
-               folder = e.href.split("songs/").slice(-1)[0].replaceAll("/", "");
-            }
+            folder = e.href.split("songs/").slice(-1)[0].replaceAll("/", "");
             //Get metadata of the folder
             let a = await fetch(`songs/${folder}/info.json`);
             let response = await a.json();
@@ -157,7 +156,7 @@ async function allSongs() {
     let folder = ""
     songs = [];
     index = 0
-    let a = await fetch(`http://127.0.0.1:5500/songs/`);
+    let a = await fetch(`songs/`);
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -169,15 +168,17 @@ async function allSongs() {
             folder = element.href.split("songs/").slice(-1)[0].replaceAll("%20", " ").replaceAll("/", "");
         }
         
-        let ab = await fetch(`http://127.0.0.1:5500/songs/${folder}/`);
+        let ab = await fetch(`songs/${folder}/`);
         let response = await ab.text();
         let div = document.createElement("div");
         div.innerHTML = response;
         let as = div.getElementsByTagName("a");
+        let port = as[0].href
         for (let index = 0; index < as.length; index++) {
             const e = as[index];
+            
             if (e.href.includes(".mp3")) {
-                songs.push("http://127.0.0.1:5500/"+e.href.replaceAll("http://", "").replaceAll(".preview", ""));
+                songs.push(port + e.href.replaceAll("http://", "").replaceAll(".preview", ""));
             }
         }
         pusher()
@@ -202,7 +203,7 @@ async function allSongs() {
                 play.src = "img/pause.svg";
             }else {
                 pausemus(index);
-                if (currentSong.src != songs[index]) {
+                if (currentSong.src!= songs[index]) {
                     currentSong.src = songs[index];
                     Array.from(pl)[preIndex].src = "img/play.svg";
                     currentSong.play();
@@ -219,10 +220,12 @@ async function allSongs() {
 
 //main functiom
 async function main() {
-    await allSongs();
-    playmus(index, true);
 
     await displayAlbum();
+
+
+    await allSongs();
+    playmus(index, true);
 
     //event listner to play of card
     document.querySelectorAll(".play").forEach((e) => {
@@ -250,7 +253,7 @@ async function main() {
 
     next.addEventListener("click", () => {
         pausemus(index)
-        if (currentSong.src !== songs[index]) {
+        if (currentSong.src != songs[index]) {
             index = 0
             playmus(index);
         }
@@ -366,6 +369,8 @@ async function main() {
         if (!currentSong.paused){
             Array.from(pl)[index].src = "img/pause.svg";
         }
+
+        
     })
 
     currentSong.addEventListener("pause",()=>{
