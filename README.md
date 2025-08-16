@@ -1,5 +1,5 @@
 # 🎵 Musify - Music Player
-# Auther - Shabbir Khan
+### Auther - Shabbir Khan
 
 A modern, responsive web-based music player built with HTML, CSS, and JavaScript. Musify allows you to browse and play music from your local music collection organized in folders.
 
