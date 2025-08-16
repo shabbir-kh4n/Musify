@@ -8,7 +8,7 @@ let currentSong = new Audio();
 
 
 async function getSongs(folder) {
-    let a = await fetch(`songs/${folder}/`);
+    let a = await fetch(`http://127.0.0.1:5500/songs/${folder}/`);
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -17,11 +17,10 @@ async function getSongs(folder) {
     index = 0;
     for (let index = 0; index < as.length; index++) {
         const element = as[index];
-        if (element.href.endsWith(".mp3")) {
-            songs.push(element.href);
+        if (element.href.includes(".mp3")) {
+            songs.push("http://127.0.0.1:5500/"+element.href.replaceAll("http://", "").replaceAll(".preview", ""))
         }
     }
-
     pusher();
 
     //attach event listerner to each song
@@ -57,7 +56,7 @@ function pausemus(index) {
 //play music
 function playmus(index, pause = false) {
     prepIndex = index;
-    document.querySelector(".songinfo").innerHTML = songs[index].replaceAll("%20", " ").split('/')[5].replace(".mp3", "");
+    document.querySelector(".songinfo").innerHTML = songs[index].replaceAll("%20", " ").split('/')[4].replace(".mp3", "");
     if (currentSong.src != songs[index]) {
         currentSong.src = songs[index];
     }
@@ -70,13 +69,16 @@ function playmus(index, pause = false) {
 
 //displaying name of music
 function pusher() {
+
     let songUL = document.querySelector(".songlist").getElementsByTagName("ul")[0];
     songUL.innerHTML = "";
+
     for (const song of songs) {
+
         songUL.innerHTML += `<li>
                         <img class="invert" src="img/music.svg" alt="">
                         <div class="info">
-                            <div class="Song">${song.replaceAll("%20", " ").split('/')[5].replace(".mp3", "")}</div>
+                            <div class="Song">${song.replaceAll("%20", " ").split('/')[5].replaceAll(".mp3", "")}</div>
                             <div class="Artist">${song.replaceAll("%20", " ").split('/')[4]}</div>
                         </div>
                         <div class="playnow">
@@ -107,11 +109,14 @@ async function displayAlbum() {
     let cardContainer = document.querySelector(".cardContainer");
     let anchors = div.getElementsByTagName("a");
     let array = Array.from(anchors);
-    for (let index = 0; index < array.length; index++) {
+    let folder = "";
+    for (let index = 3; index < array.length; index++) {
         const e = array[index];
 
         if (e.href.includes("/songs/")) {
-            let folder = e.href.split("songs/").slice(-1)[0];
+            if(e.href.includes("songs/")){
+               folder = e.href.split("songs/").slice(-1)[0].replaceAll("/", "");
+            }
             //Get metadata of the folder
             let a = await fetch(`songs/${folder}/info.json`);
             let response = await a.json();
@@ -134,11 +139,8 @@ async function displayAlbum() {
 
     //load playList whenever card is clicked
     Array.from(document.getElementsByClassName("card")).forEach((e) => {
-        e.addEventListener("click", async (item) => {
-            await getSongs(`${item.currentTarget.dataset.folder}`);
-            // document.querySelector(".circle").style.left = "0%";
-            // play.src = "img/play.svg";
-
+        e.addEventListener("click", async function(item) {
+            await getSongs(`${this.dataset.folder}`);
             if (prepIndex == songs.indexOf(currentSong.src)) {
                 index = prepIndex
                 if (!currentSong.paused) {
@@ -155,28 +157,32 @@ async function allSongs() {
     let folder = ""
     songs = [];
     index = 0
-    let a = await fetch(`songs/`);
+    let a = await fetch(`http://127.0.0.1:5500/songs/`);
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
     let anchors = div.getElementsByTagName("a");
     let array = Array.from(anchors);
-    for (let index = 0; index < array.length; index++) {
+    for (let index = 3; index < array.length; index++) {
         const element = array[index];
-        folder = element.href.split("songs/").slice(-1)[0];
-        let ab = await fetch(`songs/${folder}/`);
+        if(element.href.includes("songs/")){
+            folder = element.href.split("songs/").slice(-1)[0].replaceAll("%20", " ").replaceAll("/", "");
+        }
+        
+        let ab = await fetch(`http://127.0.0.1:5500/songs/${folder}/`);
         let response = await ab.text();
         let div = document.createElement("div");
         div.innerHTML = response;
         let as = div.getElementsByTagName("a");
         for (let index = 0; index < as.length; index++) {
             const e = as[index];
-            if (e.href.endsWith(".mp3")) {
-                songs.push(e.href);
+            if (e.href.includes(".mp3")) {
+                songs.push("http://127.0.0.1:5500/"+e.href.replaceAll("http://", "").replaceAll(".preview", ""));
             }
         }
         pusher()
     }
+    
 
     //attach event listerner to each song
     SongArr = Array.from(
